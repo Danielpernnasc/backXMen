@@ -52,7 +52,7 @@ app.post('/notificacoes', (req, res) => {
             return;
         }
         console.log('Dados salvos com sucesso no arquivo JSON');
-        res.status(200).send('Usuários adicionados com sucesso');
+        res.status(200).json({ message: 'Notificação adicionada com sucesso', data: newNotificacoes });
     });
 });
 
@@ -71,60 +71,50 @@ app.get('/notificacoes/:id', (req, res) => {
     res.json(notificacao);
 });
 
-
 app.put('/notificacoes/:id', (req, res) => {
     const notificacaoId = parseInt(req.params.id);
     const updatenotificacao = req.body;
 
-    // Encontra o índice do usuário a ser atualizado
+    // Encontra o índice da notificação a ser atualizada
     const notificacaoIndex = notificacoes.findIndex(notificacao => notificacao.id === notificacaoId);
 
     if (notificacaoIndex === -1) {
-        return res.status(404).send('Usuário não encontrado');
+        return res.status(404).json({ error: 'Notificação não encontrada' });
     }
 
-    // Atualiza o usuário com os novos dados
+    // Atualiza a notificação com os novos dados
     notificacoes[notificacaoIndex] = { ...notificacoes[notificacaoIndex], ...updatenotificacao };
 
     // Salva os dados atualizados de volta no arquivo JSON
-    fs.writeFile('/notificacao.json', JSON.stringify(notificacoes), (err) => {
+    fs.writeFile('notificacao.json', JSON.stringify(notificacoes), (err) => {
         if (err) {
             console.error('Erro ao salvar dados no arquivo JSON:', err);
-            res.status(500).send('Erro interno do servidor');
-            return;
+            return res.status(500).json({ error: 'Erro interno do servidor' });
         }
         console.log('Dados salvos com sucesso no arquivo JSON');
-        res.status(200).send('Usuário atualizado com sucesso');
+        return res.status(200).json({ message: 'Notificação atualizada com sucesso' });
     });
 });
+
 
 app.delete('/notificacoes/:id', (req, res) => {
     const notificacaoId = parseInt(req.params.id); // Convertendo o ID para um número inteiro
 
-    // Filtra os usuários, mantendo apenas aqueles com IDs diferentes do ID fornecido na solicitação
+    // Filtra as notificações, mantendo apenas aquelas com IDs diferentes do ID fornecido na solicitação
     notificacoes = notificacoes.filter(notificacao => notificacao.id !== notificacaoId);
-     // Cria um conjunto para armazenar IDs únicos
-     const uniqueIds = new Set();
 
-     // Filtra as notificações, adicionando os IDs únicos ao conjunto
-     const uniqueNotificacoes = notificacoes.filter(notificacao => {
-         if (!uniqueIds.has(notificacao.id)) {
-             uniqueIds.add(notificacao.id);
-             return true;
-         }
-         return false;
-     });
-
+    // Escreve os dados atualizados de volta no arquivo JSON
     fs.writeFile('notificacao.json', JSON.stringify(notificacoes), (err) => {
         if (err) {
             console.error('Erro ao salvar dados no arquivo JSON:', err);
             res.status(500).send('Erro interno do servidor');
             return;
         }
-        console.log('Dados salvos com sucesso no arquivo JSON');
-        res.status(200).send('Usuário removido com sucesso');
+        console.log('Notificação removida com sucesso');
+        res.status(200).json({ message: 'Notificação removida com sucesso' }); // Responde com um JSON indicando o sucesso da operação
     });
 });
+
 
 app.delete('/notificacoes', (req, res) => {
     notificacoes = []; // Remove todas as notificações
